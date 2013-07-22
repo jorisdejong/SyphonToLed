@@ -24,6 +24,8 @@ class testApp : public ofBaseApp{
     ofxSyphonClient syphonInput;
     int w;
     int h;
+    int oldW;
+    int oldH;
     
     ofTexture tex;
     ofPixels pix;
@@ -31,5 +33,6 @@ class testApp : public ofBaseApp{
     ofxDmx dmx;
     //string packet;
     //ofSerial arduino;
+    ofSerial deviceList;
 		
 };

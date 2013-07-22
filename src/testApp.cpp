@@ -6,12 +6,23 @@ void testApp::setup(){
     syphonInput.setApplicationName("Arena");
     syphonInput.setServerName("LED");
     
-    //why can't I make this dynamic
-    tex.allocate(32,1,GL_RGB); //don't need alpha
-    //pix.allocate(8,8,3);
-    
-    //connect to the Enttec
-    dmx.connect("tty.usbserial-EN099397", 96);
+        
+        
+    //get the serial device list
+    vector <ofSerialDeviceInfo> devices = deviceList.getDeviceList();
+    for(int i = 0; i < devices.size(); i++)
+    {
+        //cout<<devices[i].getDeviceName()<<endl;
+        string deviceName = devices[i].getDeviceName();
+        if(deviceName.substr(0,3) == "tty" && deviceName.substr(14,2) == "EN")
+        {
+            //connect to the Enttec
+            dmx.connect(deviceName, 96);
+            return;
+            
+        }   
+
+    }
     
     //connect to the Arduino
     //arduino.setup(0,9600);
@@ -22,9 +33,19 @@ void testApp::setup(){
 //--------------------------------------------------------------
 void testApp::update(){
     
+    
     w = syphonInput.getWidth();
     h = syphonInput.getHeight();
-    //cout<<w<<","<<h<<endl;
+
+    if(oldW != w || oldH != h)
+    {
+        tex.allocate(w,h,GL_RGB); //don't need alpha
+        dmx.setChannels(3*w*h);
+        oldW = w;
+        oldH = h;
+    }
+    //pix.allocate(8,8,3);
+
     
    
 
@@ -34,12 +55,14 @@ void testApp::update(){
 void testApp::draw(){
     
     
-    //to do: how do I get the Syphon texture loaded as an ofTexture without loading and reading it from the screen
+    //to do: how do I get the Syphon texture loaded as an ofTexture without displaying and reading it from the screen
     ofSetColor(255,255,255);
     syphonInput.draw(0,0);
     tex.loadScreenData(0,0,w,h); 
     tex.readToPixels(pix);
+
     
+    ofBackground(24,24,24);
     
     
     //crawl through the pixels, get their HEX and send it via serial
