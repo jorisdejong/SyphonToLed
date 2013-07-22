@@ -13,14 +13,17 @@ void testApp::setup(){
     for(int i = 0; i < devices.size(); i++)
     {
         //cout<<devices[i].getDeviceName()<<endl;
-        string deviceName = devices[i].getDeviceName();
+        deviceName = devices[i].getDeviceName();
         if(deviceName.substr(0,3) == "tty" && deviceName.substr(14,2) == "EN")
         {
             //connect to the Enttec
             dmx.connect(deviceName, 96);
+            connectedToEnttec = true;
             return;
             
-        }   
+        }
+        else
+            connectedToEnttec = false;
 
     }
     
@@ -39,8 +42,22 @@ void testApp::update(){
 
     if(oldW != w || oldH != h)
     {
+        
+        tex.clear();
         tex.allocate(w,h,GL_RGB); //don't need alpha
-        dmx.setChannels(3*w*h);
+        
+        if(3*w*h>512)
+        {
+            dmx.setChannels(512);
+            ofSetColor(255);
+            textureTooBig = true;
+        }
+        else
+        {
+            dmx.setChannels(3*w*h);
+            textureTooBig = false;
+        }
+        
         oldW = w;
         oldH = h;
     }
@@ -75,10 +92,13 @@ void testApp::draw(){
         
             int loc = pix.getPixelIndex(x, y)/3; //get the current pixelindex
             
-            //set the Enttec channels
-            dmx.setLevel(loc*3+1, col.r);
-            dmx.setLevel(loc*3+2, col.g);
-            dmx.setLevel(loc*3+3, col.b);
+            if(loc*3+3<=512) //clamp to 512 channels
+            {
+                //set the Enttec channels
+                dmx.setLevel(loc*3+1, col.r);
+                dmx.setLevel(loc*3+2, col.g);
+                dmx.setLevel(loc*3+3, col.b);
+            }
 
             //send the message to the Arduino
             /**
@@ -95,13 +115,33 @@ void testApp::draw(){
 
             
             ofSetHexColor(hexCol);
-            int s = ofGetWidth()/(w+1);
+            int s;
+            if(w>h)
+                s = ofGetWidth()/(w+1);
+            else
+                s = ofGetHeight()/(h+1);
             ofRect(x*s+10, y*s+10, s, s);
         }
     }
     
     //tell the Enttect to update
     dmx.update();
+    
+    //draw "GUI"
+    ofSetColor(64,64,64);
+    int guiY = 658;
+    ofRectRounded(10, guiY, 1004,100,10);
+    
+    if(textureTooBig)
+    {
+        ofSetColor(200,0,0);
+        ofDrawBitmapString("That's too many DMX channels for this universe, so I'm only sending the first 512...", 20,guiY+70);
+    }
+    ofSetColor(128);
+    if(connectedToEnttec)
+        ofDrawBitmapString("Connected to Enttec, "+deviceName, 20, guiY+20);
+    else
+        ofDrawBitmapString("No Enttec devices found...", 20,guiY+20);
     
     //send a single byte to let the Arduino know it should display
     //arduino.writeByte('x');

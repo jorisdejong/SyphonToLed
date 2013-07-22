@@ -27,10 +27,14 @@ class testApp : public ofBaseApp{
     int oldW;
     int oldH;
     
+    bool textureTooBig;
+    bool connectedToEnttec;
+    
     ofTexture tex;
     ofPixels pix;
     
     ofxDmx dmx;
+    string deviceName;
     //string packet;
     //ofSerial arduino;
     ofSerial deviceList;
