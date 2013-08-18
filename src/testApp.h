@@ -33,10 +33,16 @@ class testApp : public ofBaseApp{
     ofTexture tex;
     ofPixels pix;
     
+    float opacity;
+    
     ofxDmx dmx;
     string deviceName;
     //string packet;
     //ofSerial arduino;
     ofSerial deviceList;
+    
+    bool mouseDown;
+    ofVec2f mousePos;
+    ofVec2f startMousePos;
 		
 };

@@ -6,7 +6,7 @@ void testApp::setup(){
     syphonInput.setApplicationName("Arena");
     syphonInput.setServerName("LED");
     
-        
+    opacity = 1.0;
         
     //get the serial device list
     vector <ofSerialDeviceInfo> devices = deviceList.getDeviceList();
@@ -95,9 +95,9 @@ void testApp::draw(){
             if(loc*3+3<=512) //clamp to 512 channels
             {
                 //set the Enttec channels
-                dmx.setLevel(loc*3+1, col.r);
-                dmx.setLevel(loc*3+2, col.g);
-                dmx.setLevel(loc*3+3, col.b);
+                dmx.setLevel(loc*3+1, col.r * opacity);
+                dmx.setLevel(loc*3+2, col.g * opacity);
+                dmx.setLevel(loc*3+3, col.b * opacity);
             }
 
             //send the message to the Arduino
@@ -143,6 +143,34 @@ void testApp::draw(){
     else
         ofDrawBitmapString("No Enttec devices found...", 20,guiY+20);
     
+    //draw opacity slider GUI
+    int sliderPosX = 900;
+    int sliderPosY = guiY + 10;
+    int sliderWidth = 30;
+    int sliderHeight = 80;
+    
+    ofRect(sliderPosX, sliderPosY, sliderWidth, sliderHeight);
+    
+    ofSetColor(192);
+    ofSetLineWidth(5);
+    float opacityPos = 80 - opacity * 80;
+    ofLine(sliderPosX, sliderPosY + opacityPos, sliderPosX + sliderWidth, sliderPosY + opacityPos);
+    ofSetLineWidth(1);
+    
+    //opacity slider logic
+    if(mouseDown)
+    {
+        if(startMousePos.x > sliderPosX && startMousePos.x < sliderPosX + sliderWidth && startMousePos.y > sliderPosY  && startMousePos.y < sliderPosY + sliderHeight)
+        {
+            opacity = 1.0 - (mousePos.y - sliderPosY) / 80 ;
+            if(opacity<0)
+                opacity=0;
+            if(opacity>1.0)
+                opacity=1.0;
+        }
+    }
+
+    
     //send a single byte to let the Arduino know it should display
     //arduino.writeByte('x');
  
@@ -170,16 +198,22 @@ void testApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void testApp::mouseDragged(int x, int y, int button){
+    mouseDown = true;
+    mousePos.set(x,y);
 
 }
 
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button){
+    mouseDown = true;
+    startMousePos.set(x,y);
 
 }
 
 //--------------------------------------------------------------
 void testApp::mouseReleased(int x, int y, int button){
+    mouseDown = false;
+    mousePos.set(x,y);
 
 }
 
