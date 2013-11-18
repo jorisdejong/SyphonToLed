@@ -92,12 +92,18 @@ void testApp::draw(){
         
             int loc = pix.getPixelIndex(x, y)/3; //get the current pixelindex
             
+            //gamma correction
+            ofColor colGammaCorrected;
+            colGammaCorrected.r = pow((col.r/255.0),2.5)*255;
+            colGammaCorrected.g = pow((col.g/255.0),2.5)*255;
+            colGammaCorrected.b = pow((col.b/255.0),2.5)*255;
+            
             if(loc*3+3<=512) //clamp to 512 channels
             {
                 //set the Enttec channels
-                dmx.setLevel(loc*3+1, col.r * opacity);
-                dmx.setLevel(loc*3+2, col.g * opacity);
-                dmx.setLevel(loc*3+3, col.b * opacity);
+                dmx.setLevel(loc*3+1, colGammaCorrected.r * opacity);
+                dmx.setLevel(loc*3+2, colGammaCorrected.g * opacity);
+                dmx.setLevel(loc*3+3, colGammaCorrected.b * opacity);
             }
 
             //send the message to the Arduino
